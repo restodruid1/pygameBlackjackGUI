@@ -2,20 +2,45 @@ import random
 import pygame
 
 
-def draw_card():
-    card = pygame.draw.rect(screen, "white",[450,200,100,100],0,5) #x,y coordinates and size of button
-    pygame.draw.rect(screen, "black",[450,200,100,100], 3,5)
-    card_text = 'Card'
+def display_player_cards(who,card,location):
+
+    if who == "player":
+        card1 = pygame.draw.rect(screen, "white",location,0,5) #x,y coordinates and size of button
+        pygame.draw.rect(screen, "black",location, 3,5)
+        card_text = f'{card[0]}'
+        card_color = 'black'
+        font = pygame.font.Font(None, 36)
+        surface = font.render(card_text,True,card_color)
+        rect = surface.get_rect(center=card1.center)
+        screen.blit(surface,rect)
+
+    else :
+        card1 = pygame.draw.rect(screen, "white",location,0,5) #x,y coordinates and size of button
+        pygame.draw.rect(screen, "black",location, 3,5)
+        card_text = f'{card[0]}'
+        card_color = 'black'
+        font = pygame.font.Font(None, 36)
+        surface = font.render(card_text,True,card_color)
+        rect = surface.get_rect(center=card1.center)
+        screen.blit(surface,rect)
+
+
+
+def play_again_button():
+    play = pygame.draw.rect(screen, "white",[200,400,200,100],0,5) #x,y coordinates and size of button
+    pygame.draw.rect(screen, "black",[200,400,200,100], 3,5)
+    card_text = 'Play Again'
     card_color = 'black'
     font = pygame.font.Font(None, 36)
     surface = font.render(card_text,True,card_color)
-    rect = surface.get_rect(center=card.center)
+    rect = surface.get_rect(center=play.center)
     screen.blit(surface,rect)
+    return play
 
 def play_button():
-    play = pygame.draw.rect(screen, "white",[650,300,100,100],0,5) #x,y coordinates and size of button
-    pygame.draw.rect(screen, "black",[650,300,100,100], 3,5)
-    card_text = 'PLAY'
+    play = pygame.draw.rect(screen, "white",[500,300,300,200],0,5) #x,y coordinates and size of button
+    pygame.draw.rect(screen, "black",[500,300,300,200], 3,5)
+    card_text = 'Deal Cards'
     card_color = 'black'
     font = pygame.font.Font(None, 36)
     surface = font.render(card_text,True,card_color)
@@ -57,65 +82,172 @@ def deck():
     return deck_list
 
 
-"""
-Each button click, the necessary buttons will appear based on the current state of the game. The card values and money will differ"""
-
-def game(first_game):
+def game_interface():
     buttons_list = []
-    if first_game == True:
+    if new_cards == True:
         buttons_list.append(play_button())
-        #buttons_list.append(draw_card())
-        
-    elif first_game != True:
-        buttons_list.append(draw_card())
+    elif new_cards == False:
+        #display_player_cards(user_hand[0],user_hand[1])
         buttons_list.append(draw_hit_button())
         buttons_list.append(draw_stand_button())
 
     return buttons_list
 
-"""screen = pygame.display.set_mode((1280, 720))
-screen.fill("dark green")
-clock = pygame.time.Clock()
-clock.tick(60)  # limits FPS to 60"""
+def end_game_interface():
+    buttons_list = []
+    buttons_list.append(play_again_button())
+
+    return buttons_list
+
+def player_cards():
+    for i in range(2):
+        user_card = random.choice(game_double_deck)
+        #print(user_card)
+        user_hand.append(user_card)
+        game_double_deck.remove(user_card)
+
+def add_one_card(player):
+    if player == True:
+        user_card = random.choice(game_double_deck)
+        user_hand.append(user_card)
+        game_double_deck.remove(user_card)
+    else:
+        dealer_card = random.choice(game_double_deck)
+        dealer_hand.append(dealer_card)
+        game_double_deck.remove(dealer_card)
+
+def dealer_cards():
+    for i in range(2):
+        dealer_card = random.choice(game_double_deck)
+        #print(user_card)
+        dealer_hand.append(dealer_card)
+        game_double_deck.remove(dealer_card)
+
+def get_values(player_value1, dealer_value1):
+    player_value = 0
+    dealer_value = 0
+    for value in player_value1:
+        if value[0] in ['J','Q','K','A']:
+            player_value += 10
+        else:
+            player_value += int(value[0])
+    for value in dealer_value1:
+        if value[0] in ['J','Q','K','A']:
+            dealer_value += 10
+        else:
+            dealer_value += int(value[0])
+    print(player_value)
+    print(dealer_value)
+    return player_value, dealer_value
+
+def display_cards_ext():
+    for i in range(len(user_hand)):
+        display_player_cards("player",user_hand[i] ,[(550+((i-1)*100)),300,150,150])
+    for i in range(len(dealer_hand)):    
+        display_player_cards("dealer",dealer_hand[i] ,[(550+((i-1)*100)),100,150,150])
+
+
+
+
+
+
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
 running = True
-new_game = True
+deal = True
+new_cards = True
 game_double_deck = deck()*2
 user_hand = []
 dealer_hand = []
+counter = 0
+hit = False
+stand = False
+game_over = False
 
 while running:   
     screen.fill("dark green")
     clock = pygame.time.Clock()
     clock.tick(60)  # limits FPS to 60
     
-    
-    test_game = game(new_game)
+    if (new_cards == True and counter > 0):
+        test_game = end_game_interface()
+        display_cards_ext()
 
+    if new_cards == True and counter == 0:
+        test_game = game_interface()  
+    else:
+        if game_over == True:
+            test_game = end_game_interface()
+            display_cards_ext()
+            
+        elif game_over == False:
+            if stand == True:
+                test_game = game_interface()
+                display_cards_ext()
+            else:
+                test_game = game_interface()
+                display_cards_ext()
+        
+    
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONUP:
-            if new_game == True:
+            if new_cards == True:
                 if test_game[0].collidepoint(event.pos): #If the play button was pressed
-                    new_game = False
+                    user_hand = []
+                    dealer_hand = []
+                    game_over = False
+                    print("Play button works")
+                    player_cards()
+                    print(f'user hand:{user_hand}')
+                    dealer_cards()
+                    print(f'dealers hand{dealer_hand}')
+                    get_values(user_hand, dealer_hand)
                     
-                    for i in range(2):
-                        user_card = random.choice(game_double_deck)
-                        print(user_card)
-                        user_hand.append(user_card)
-                        game_double_deck.remove(user_card)
-                        dealer_card = random.choice(game_double_deck)
-                        print(dealer_card)
-                        dealer_hand.append(dealer_card)
-                        game_double_deck.remove(dealer_card)
+                    new_cards = False
+            elif new_cards == False: 
+                if test_game[0].collidepoint(event.pos):
+                    print("user pressed hit")
+                    add_one_card(True)
+                    print(f'user hand:{user_hand}, dealers hand{dealer_hand}')
+                    compare = get_values(user_hand, dealer_hand)
+                    if compare[0] > 21:
+                        game_over = True
+                        new_cards = True
+        
+                elif test_game[1].collidepoint(event.pos):
+                    print("user pressed stand")
+                    compare = get_values(user_hand, dealer_hand)
+                    while compare[1] < 17:
+                        add_one_card(False) #Dealer hits here
+                        compare = get_values(user_hand, dealer_hand)
+                        if compare[1] > 21:
+                            print("dealer loses")
+                            game_over = True
+                            new_cards = True
+                            
+                    if (compare[0] < compare[1]) and (compare[1] < 22):
+                        print("dealer wins")
+                        game_over = True
+                        new_cards = True
+                        
+                    if (compare[0] > compare[1]) and (compare[1] < 22):
+                        print("Player wins")
+                        game_over = True
+                        new_cards = True
+                    if compare[0] == compare[1]:
+                        print("Players Tie")
+                        game_over = True
+                        new_cards = True
+                    #stand = True
+            counter += 1
+
+        
                     
-            elif new_game == False:
-                print("WIP")
-                
+          
                 
 
 
@@ -123,3 +255,9 @@ while running:
         
     pygame.display.flip()        
 pygame.quit()
+
+
+"""
+Work on drawing the cards with their values
+Work on logic of winning and losing game
+"""

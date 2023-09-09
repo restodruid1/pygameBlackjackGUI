@@ -60,6 +60,17 @@ def draw_hit_button():
     screen.blit(surface,circle)
     return hit
 
+def draw_dd_button():
+    dd = pygame.draw.circle(screen,'white',[800,650],50)
+    pygame.draw.circle(screen,'black',[800,650],53,3)
+    text = "Double"
+    color = "black"
+    font = pygame.font.Font(None, 36)
+    surface = font.render(text,True,color)
+    circle = surface.get_rect(center=dd.center)
+    screen.blit(surface,circle)
+    return dd
+
 def draw_stand_button():
     stand = pygame.draw.circle(screen,'white',[650,650],50)
     pygame.draw.circle(screen,'black',[650,650],53,3)
@@ -90,6 +101,20 @@ def game_interface():
         #display_player_cards(user_hand[0],user_hand[1])
         buttons_list.append(draw_hit_button())
         buttons_list.append(draw_stand_button())
+
+
+    return buttons_list
+
+def game_interface2():
+    buttons_list = []
+    if new_cards == True:
+        buttons_list.append(play_button())
+    elif new_cards == False:
+        #display_player_cards(user_hand[0],user_hand[1])
+        buttons_list.append(draw_hit_button())
+        buttons_list.append(draw_stand_button())
+        buttons_list.append(draw_dd_button())
+        
 
     return buttons_list
 
@@ -141,10 +166,17 @@ def get_values(player_value1, dealer_value1):
     return player_value, dealer_value
 
 def display_cards_ext():
-    for i in range(len(user_hand)):
-        display_player_cards("player",user_hand[i] ,[(550+((i-1)*100)),300,150,150])
-    for i in range(len(dealer_hand)):    
-        display_player_cards("dealer",dealer_hand[i] ,[(550+((i-1)*100)),100,150,150])
+    if deal == True:
+        for i in range(len(user_hand)):
+            display_player_cards("player",user_hand[i] ,[(550+((i-1)*100)),300,150,150])
+        for i in range(len(dealer_hand)):    
+            display_player_cards("dealer",dealer_hand[i] ,[(550+((i-1)*50)),100,150,150])
+
+    else:
+        for i in range(len(user_hand)):
+            display_player_cards("player",user_hand[i] ,[(550+((i-1)*100)),300,150,150])
+        for i in range(len(dealer_hand)):    
+            display_player_cards("dealer",dealer_hand[i] ,[(550+((i-1)*100)),100,150,150])
 
 
 
@@ -181,8 +213,8 @@ while running:
             display_cards_ext()
             
         elif game_over == False:
-            if stand == True:
-                test_game = game_interface()
+            if hit == False:
+                test_game = game_interface2()
                 display_cards_ext()
             else:
                 test_game = game_interface()
@@ -200,16 +232,19 @@ while running:
                     user_hand = []
                     dealer_hand = []
                     game_over = False
+                    deal = True
+                    
                     print("Play button works")
                     player_cards()
                     print(f'user hand:{user_hand}')
                     dealer_cards()
                     print(f'dealers hand{dealer_hand}')
-                    get_values(user_hand, dealer_hand)
-                    
+                    cards = get_values(user_hand, dealer_hand)                                        
                     new_cards = False
+
             elif new_cards == False: 
                 if test_game[0].collidepoint(event.pos):
+                    hit = True
                     print("user pressed hit")
                     add_one_card(True)
                     print(f'user hand:{user_hand}, dealers hand{dealer_hand}')
@@ -217,7 +252,10 @@ while running:
                     if compare[0] > 21:
                         game_over = True
                         new_cards = True
-        
+                        deal = False
+                        hit = False
+                    
+
                 elif test_game[1].collidepoint(event.pos):
                     print("user pressed stand")
                     compare = get_values(user_hand, dealer_hand)
@@ -243,6 +281,39 @@ while running:
                         game_over = True
                         new_cards = True
                     #stand = True
+                    deal = False
+                    hit = False
+                elif test_game[2].collidepoint(event.pos):
+                    print("player doubles down")
+                    add_one_card(True)
+                    compare = get_values(user_hand, dealer_hand)
+                    if compare[0] > 21:
+                        print("player loses")
+                        game_over = True
+                        new_cards = True
+                    else:
+                        while compare[1] < 17:
+                            add_one_card(False) #Dealer hits here
+                            compare = get_values(user_hand, dealer_hand)
+                            if compare[1] > 21:
+                                print("dealer loses")
+                                game_over = True
+                                new_cards = True
+                        if (compare[0] < compare[1]) and (compare[1] < 22):
+                            print("dealer wins")
+                            game_over = True
+                            new_cards = True
+                            
+                        if (compare[0] > compare[1]) and (compare[1] < 22):
+                            print("Player wins")
+                            game_over = True
+                            new_cards = True
+                        if compare[0] == compare[1]:
+                            print("Players Tie")
+                            game_over = True
+                            new_cards = True
+                    deal = False
+                    hit = False
             counter += 1
 
         

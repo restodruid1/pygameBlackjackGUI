@@ -315,6 +315,9 @@ while running:
                     deal = False
                     hit = False
             counter += 1
+            if len(game_double_deck) < 10:
+                print("New deck")
+                game_double_deck = deck() * 2
 
         
                     
@@ -329,6 +332,9 @@ pygame.quit()
 
 
 """
-Work on drawing the cards with their values
-Work on logic of winning and losing game
+Add ability to use chips?
+Show text on screen for who won
+give aces the ability to be 1 or 11
+add card graphics
+add split feature
 """

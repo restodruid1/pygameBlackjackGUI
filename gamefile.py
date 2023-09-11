@@ -161,8 +161,6 @@ def get_values(player_value1, dealer_value1):
             dealer_value += 10
         else:
             dealer_value += int(value[0])
-    print(player_value)
-    print(dealer_value)
     return player_value, dealer_value
 
 def display_cards_ext():
@@ -178,7 +176,42 @@ def display_cards_ext():
         for i in range(len(dealer_hand)):    
             display_player_cards("dealer",dealer_hand[i] ,[(550+((i-1)*100)),100,150,150])
 
+def display_dealer_score(total):
+    card_text = f'[{total[1]}]'
+    card_color = 'white'
+    font = pygame.font.Font(None, 36)
+    surface = font.render(card_text,True,card_color)
+    rect = surface.get_rect(x=325, y=100)
+    screen.blit(surface,rect)
+    
+    
+def display_player_score(total):    
+    card_text = f'[{total[0]}]'
+    card_color = 'white'
+    font = pygame.font.Font(None, 36)
+    surface = font.render(card_text,True,card_color)
+    rect = surface.get_rect(x=325, y=300)
+    screen.blit(surface,rect)
 
+def display_winner(total):
+    if ((total[0] > total[1]) and (total[0]) < 22):
+        card_text = "Player Wins!!!!"
+    elif ((total[0] < total[1]) and (total[1]) < 22):
+        card_text = "Dealer Wins"
+    elif (total[0] == total[1]):
+          card_text = "Tie"
+    elif total[0] > 21:
+        card_text = "Player Busts"
+    elif total[1] > 21:
+        card_text = "Dealer Busts"
+    else:
+        card_text = "bug"
+    
+    card_color = 'white'
+    font = pygame.font.Font(None, 56)
+    surface = font.render(card_text,True,card_color)
+    rect = surface.get_rect(x=450, y=25)
+    screen.blit(surface,rect)
 
 
 
@@ -204,6 +237,9 @@ while running:
     if (new_cards == True and counter > 0):
         test_game = end_game_interface()
         display_cards_ext()
+        display_dealer_score(get_values(user_hand, dealer_hand))
+        display_player_score(get_values(user_hand, dealer_hand))
+        display_winner(get_values(user_hand, dealer_hand))
 
     if new_cards == True and counter == 0:
         test_game = game_interface()  
@@ -211,14 +247,19 @@ while running:
         if game_over == True:
             test_game = end_game_interface()
             display_cards_ext()
+            display_player_score(get_values(user_hand, dealer_hand))
+            display_dealer_score(get_values(user_hand, dealer_hand))
+            display_winner(get_values(user_hand, dealer_hand))
             
         elif game_over == False:
             if hit == False:
                 test_game = game_interface2()
                 display_cards_ext()
+                display_player_score(get_values(user_hand, dealer_hand))
             else:
                 test_game = game_interface()
                 display_cards_ext()
+                display_player_score(get_values(user_hand, dealer_hand))
         
     
     # poll for events

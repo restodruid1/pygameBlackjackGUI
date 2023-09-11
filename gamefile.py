@@ -148,19 +148,24 @@ def dealer_cards():
         dealer_hand.append(dealer_card)
         game_double_deck.remove(dealer_card)
 
+
 def get_values(player_value1, dealer_value1):
     player_value = 0
     dealer_value = 0
-    for value in player_value1:
-        if value[0] in ['J','Q','K','A']:
+    for value in player_value1:    
+        if value[0] in ['J','Q','K']:
             player_value += 10
-        else:
+        elif value[0] in ['2', '3', '4', '5', '6', '7', '8', '9', '10']:
             player_value += int(value[0])
+        elif value[0] in ['A']:
+            player_value += 11
     for value in dealer_value1:
-        if value[0] in ['J','Q','K','A']:
+        if value[0] in ['J','Q','K']:
             dealer_value += 10
-        else:
+        elif value[0] in ['2', '3', '4', '5', '6', '7', '8', '9', '10']:
             dealer_value += int(value[0])
+        elif value[0] in ['A']:    
+            dealer_value += 11
     return player_value, dealer_value
 
 def display_cards_ext():
@@ -194,8 +199,10 @@ def display_player_score(total):
     screen.blit(surface,rect)
 
 def display_winner(total):
-    if ((total[0] > total[1]) and (total[0]) < 22):
-        card_text = "Player Wins!!!!"
+    if (total[0] == 21 and uH == 2):
+        card_text = "Blackjack"
+    elif ((total[0] > total[1]) and (total[0]) < 22):
+        card_text = "Player Wins"
     elif ((total[0] < total[1]) and (total[1]) < 22):
         card_text = "Dealer Wins"
     elif (total[0] == total[1]):
@@ -223,6 +230,7 @@ deal = True
 new_cards = True
 game_double_deck = deck()*2
 user_hand = []
+uH = len(user_hand)
 dealer_hand = []
 counter = 0
 hit = False
@@ -282,6 +290,10 @@ while running:
                     print(f'dealers hand{dealer_hand}')
                     cards = get_values(user_hand, dealer_hand)                                        
                     new_cards = False
+                    if cards[0] == 21:
+                        game_over = True 
+                        new_cards = True
+                    uH = len(user_hand)
 
             elif new_cards == False: 
                 if test_game[0].collidepoint(event.pos):

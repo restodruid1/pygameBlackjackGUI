@@ -152,6 +152,8 @@ def dealer_cards():
 def get_values(player_value1, dealer_value1):
     player_value = 0
     dealer_value = 0
+    player_aces = 0
+    dealer_aces = 0
     for value in player_value1:    
         if value[0] in ['J','Q','K']:
             player_value += 10
@@ -159,6 +161,11 @@ def get_values(player_value1, dealer_value1):
             player_value += int(value[0])
         elif value[0] in ['A']:
             player_value += 11
+            player_aces += 1
+        if player_value > 21 and player_aces > 0:
+            player_aces -= 1
+            player_value -= 10
+               
     for value in dealer_value1:
         if value[0] in ['J','Q','K']:
             dealer_value += 10
@@ -166,6 +173,11 @@ def get_values(player_value1, dealer_value1):
             dealer_value += int(value[0])
         elif value[0] in ['A']:    
             dealer_value += 11
+            dealer_aces += 1
+        if dealer_value > 21 and dealer_aces > 0:
+            dealer_aces -= 1
+            dealer_value -= 10
+
     return player_value, dealer_value
 
 def display_cards_ext():
@@ -220,7 +232,11 @@ def display_winner(total):
     rect = surface.get_rect(x=450, y=25)
     screen.blit(surface,rect)
 
-
+"""def check_aces():
+    total = 0
+    for card in user_hand:
+        if card[0] == 'A':
+"""
 
 
 pygame.init()
@@ -336,6 +352,7 @@ while running:
                     #stand = True
                     deal = False
                     hit = False
+                    uH = len(user_hand)
                 elif test_game[2].collidepoint(event.pos):
                     print("player doubles down")
                     add_one_card(True)

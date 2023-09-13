@@ -419,9 +419,11 @@ while running:
                                 new_cards = True
                                 deal = False
                                 #game_over = 1
+                                print(dealer_hand)
                                 while compare[1] < 17:
                                     add_one_card(False)
-                            
+                                    compare = get_values(user_hand, dealer_hand)
+                                print(dealer_hand)
                     else:
                         print("user pressed hit")
                         add_one_card(True)
@@ -442,8 +444,11 @@ while running:
                         else:
                             new_cards = True
                             compare = get_values(user_hand, dealer_hand)
+                            print(dealer_hand)
                             while compare[1] < 17:
                                 add_one_card(False)
+                                compare = get_values(user_hand, dealer_hand)
+                            print(dealer_hand)
                             deal = False
                             #game_over = 1
 

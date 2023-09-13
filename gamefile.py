@@ -27,8 +27,8 @@ def display_player_cards(who,card,location):
 
 
 def play_again_button():
-    play = pygame.draw.rect(screen, "white",[200,400,200,100],0,5) #x,y coordinates and size of button
-    pygame.draw.rect(screen, "black",[200,400,200,100], 3,5)
+    play = pygame.draw.rect(screen, "white",[100,175,200,100],0,5) #x,y coordinates and size of button
+    pygame.draw.rect(screen, "black",[100,175,200,100], 3,5)
     card_text = 'Play Again'
     card_color = 'black'
     font = pygame.font.Font(None, 36)
@@ -70,6 +70,7 @@ def draw_dd_button():
     circle = surface.get_rect(center=dd.center)
     screen.blit(surface,circle)
     return dd
+
 
 def draw_stand_button():
     stand = pygame.draw.circle(screen,'white',[650,650],50)
@@ -117,6 +118,7 @@ def game_interface2():
         
 
     return buttons_list
+
 
 def end_game_interface():
     buttons_list = []
@@ -232,11 +234,74 @@ def display_winner(total):
     rect = surface.get_rect(x=450, y=25)
     screen.blit(surface,rect)
 
-"""def check_aces():
-    total = 0
-    for card in user_hand:
-        if card[0] == 'A':
-"""
+
+#THE SPLIT FEATURE FUNCTIONS
+def draw_split_button():
+    split = pygame.draw.circle(screen,'white',[950,650],50)
+    pygame.draw.circle(screen,'black',[950,650],53,3)
+    text = "Split"
+    color = "black"
+    font = pygame.font.Font(None, 36)
+    surface = font.render(text,True,color)
+    circle = surface.get_rect(center=split.center)
+    screen.blit(surface,circle)
+    return split
+
+def game_interface3():
+    buttons_list = []
+    if new_cards == True:
+        buttons_list.append(play_button())
+    elif new_cards == False:
+        #display_player_cards(user_hand[0],user_hand[1])
+        buttons_list.append(draw_hit_button())
+        buttons_list.append(draw_stand_button())
+        buttons_list.append(draw_dd_button())
+        buttons_list.append(draw_split_button())
+        
+
+    return buttons_list
+
+def add_one_card_split(main):
+    if main:
+        user_card = random.choice(game_double_deck)
+        user_hand.append(user_card)
+        game_double_deck.remove(user_card)
+    else:
+        user_card = random.choice(game_double_deck)
+        split_hand.append(user_card)
+        game_double_deck.remove(user_card)
+
+def display_cards_split():
+    if deal == True:
+        for i in range(len(user_hand)):
+            display_player_cards("player",user_hand[i] ,[(350+((i-1)*100)),300,150,150])
+        for i in range(len(split_hand)):
+            display_player_cards("player",split_hand[i] ,[(850+((i-1)*100)),300,150,150])
+        for i in range(len(dealer_hand)):    
+            display_player_cards("dealer",dealer_hand[i] ,[(550+((i-1)*50)),100,150,150])
+
+    else:
+        for i in range(len(user_hand)):
+            display_player_cards("player",user_hand[i] ,[(350+((i-1)*100)),300,150,150])
+        for i in range(len(split_hand)):
+            display_player_cards("player",split_hand[i] ,[(850+((i-1)*100)),300,150,150])
+        for i in range(len(dealer_hand)):    
+            display_player_cards("dealer",dealer_hand[i] ,[(550+((i-1)*100)),100,150,150])
+
+def display_player_split(total1, total2):    
+    card_text = f'[{total1}]'
+    card_color = 'white'
+    font = pygame.font.Font(None, 36)
+    surface = font.render(card_text,True,card_color)
+    rect = surface.get_rect(x=125, y=300)
+    screen.blit(surface,rect)
+
+    card_text = f'[{total2}]'
+    card_color = 'white'
+    font = pygame.font.Font(None, 36)
+    surface = font.render(card_text,True,card_color)
+    rect = surface.get_rect(x=900, y=250)
+    screen.blit(surface,rect)
 
 
 pygame.init()
@@ -246,12 +311,16 @@ deal = True
 new_cards = True
 game_double_deck = deck()*2
 user_hand = []
+split_hand = []
 uH = len(user_hand)
 dealer_hand = []
 counter = 0
 hit = False
 stand = False
-game_over = False
+game_over = 1
+pairs = False
+split = False
+first_hand = True
 
 while running:   
     screen.fill("dark green")
@@ -259,31 +328,46 @@ while running:
     clock.tick(60)  # limits FPS to 60
     
     if (new_cards == True and counter > 0):
-        test_game = end_game_interface()
-        display_cards_ext()
-        display_dealer_score(get_values(user_hand, dealer_hand))
-        display_player_score(get_values(user_hand, dealer_hand))
-        display_winner(get_values(user_hand, dealer_hand))
+        if game_over == 2:
+            test_game = end_game_interface()
+            display_cards_split()
+            display_dealer_score(get_values(user_hand, dealer_hand))
+            display_player_split(firstValue[0],secondValue[0])
+        else:
+            test_game = end_game_interface()
+            display_cards_ext()
+            display_dealer_score(get_values(user_hand, dealer_hand))
+            display_player_score(get_values(user_hand, dealer_hand))
+            display_winner(get_values(user_hand, dealer_hand))
 
     if new_cards == True and counter == 0:
         test_game = game_interface()  
-    else:
-        if game_over == True:
+    elif new_cards == False:
+        if game_over == 0:
             test_game = end_game_interface()
             display_cards_ext()
             display_player_score(get_values(user_hand, dealer_hand))
             display_dealer_score(get_values(user_hand, dealer_hand))
             display_winner(get_values(user_hand, dealer_hand))
             
-        elif game_over == False:
-            if hit == False:
-                test_game = game_interface2()
-                display_cards_ext()
-                display_player_score(get_values(user_hand, dealer_hand))
+        elif game_over == 1:
+            if hit == False:  
+                if pairs == True:
+                    test_game = game_interface3()
+                    display_cards_ext()
+                    display_player_score(get_values(user_hand, dealer_hand))
+                else:
+                    test_game = game_interface2()
+                    display_cards_ext()
+                    display_player_score(get_values(user_hand, dealer_hand))
             else:
                 test_game = game_interface()
                 display_cards_ext()
                 display_player_score(get_values(user_hand, dealer_hand))
+        elif game_over == 2:
+            test_game = game_interface()
+            display_cards_split()
+            display_player_split(firstValue[0],secondValue[0])
         
     
     # poll for events
@@ -296,8 +380,12 @@ while running:
                 if test_game[0].collidepoint(event.pos): #If the play button was pressed
                     user_hand = []
                     dealer_hand = []
-                    game_over = False
+                    split_hand = []
+                    game_over = 1
                     deal = True
+                    pairs = False
+                    hit = False
+                    first_hand = True
                     
                     print("Play button works")
                     player_cards()
@@ -307,59 +395,93 @@ while running:
                     cards = get_values(user_hand, dealer_hand)                                        
                     new_cards = False
                     if cards[0] == 21:
-                        game_over = True 
+                        game_over = 0 
                         new_cards = True
+                    if user_hand[0][0] == user_hand[1][0]:
+                        pairs = True
                     uH = len(user_hand)
 
             elif new_cards == False: 
                 if test_game[0].collidepoint(event.pos):
                     hit = True
-                    print("user pressed hit")
-                    add_one_card(True)
-                    print(f'user hand:{user_hand}, dealers hand{dealer_hand}')
-                    compare = get_values(user_hand, dealer_hand)
-                    if compare[0] > 21:
-                        game_over = True
-                        new_cards = True
-                        deal = False
-                        hit = False
+                    pairs = False
+                    if game_over == 2:
+                        if first_hand == True:
+                            add_one_card_split(True)
+                            compare = get_values(user_hand, dealer_hand)
+                            if compare[0] > 21:
+                                first_hand = False
+                                add_one_card_split(False)
+                        else:
+                            add_one_card_split(False)
+                            compare = get_values(split_hand, dealer_hand)
+                            if compare[0] > 21:
+                                new_cards = True
+                                deal = False
+                                #game_over = 1
+                                while compare[1] < 17:
+                                    add_one_card(False)
+                            
+                    else:
+                        print("user pressed hit")
+                        add_one_card(True)
+                        print(f'user hand:{user_hand}, dealers hand{dealer_hand}')
+                        compare = get_values(user_hand, dealer_hand)
+                        if compare[0] > 21:
+                            game_over = 0
+                            new_cards = True
+                            deal = False
+                            hit = False
                     
 
                 elif test_game[1].collidepoint(event.pos):
-                    print("user pressed stand")
-                    compare = get_values(user_hand, dealer_hand)
-                    while compare[1] < 17:
-                        add_one_card(False) #Dealer hits here
+                    if game_over == 2:
+                        if first_hand == True:
+                            first_hand = False
+                            add_one_card_split(False)
+                        else:
+                            new_cards = True
+                            compare = get_values(user_hand, dealer_hand)
+                            while compare[1] < 17:
+                                add_one_card(False)
+                            deal = False
+                            #game_over = 1
+
+                    else:
+                        print("user pressed stand")
                         compare = get_values(user_hand, dealer_hand)
-                        if compare[1] > 21:
-                            print("dealer loses")
-                            game_over = True
+                        while compare[1] < 17:
+                            add_one_card(False) #Dealer hits here
+                            compare = get_values(user_hand, dealer_hand)
+                            if compare[1] > 21:
+                                print("dealer loses")
+                                game_over = 0
+                                new_cards = True
+                                
+                        if (compare[0] < compare[1]) and (compare[1] < 22):
+                            print("dealer wins")
+                            game_over = 0
                             new_cards = True
                             
-                    if (compare[0] < compare[1]) and (compare[1] < 22):
-                        print("dealer wins")
-                        game_over = True
-                        new_cards = True
-                        
-                    if (compare[0] > compare[1]) and (compare[1] < 22):
-                        print("Player wins")
-                        game_over = True
-                        new_cards = True
-                    if compare[0] == compare[1]:
-                        print("Players Tie")
-                        game_over = True
-                        new_cards = True
-                    #stand = True
-                    deal = False
-                    hit = False
-                    uH = len(user_hand)
+                        if (compare[0] > compare[1]) and (compare[1] < 22):
+                            print("Player wins")
+                            game_over = 0
+                            new_cards = True
+                        if compare[0] == compare[1]:
+                            print("Players Tie")
+                            game_over = 0
+                            new_cards = True
+                        #stand = True
+                        deal = False
+                        hit = False
+                        uH = len(user_hand)
                 elif test_game[2].collidepoint(event.pos):
                     print("player doubles down")
                     add_one_card(True)
                     compare = get_values(user_hand, dealer_hand)
                     if compare[0] > 21:
                         print("player loses")
-                        game_over = True
+                        game_over = 0
                         new_cards = True
                     else:
                         while compare[1] < 17:
@@ -367,24 +489,37 @@ while running:
                             compare = get_values(user_hand, dealer_hand)
                             if compare[1] > 21:
                                 print("dealer loses")
-                                game_over = True
+                                game_over = 0
                                 new_cards = True
                         if (compare[0] < compare[1]) and (compare[1] < 22):
                             print("dealer wins")
-                            game_over = True
+                            game_over = 0
                             new_cards = True
                             
                         if (compare[0] > compare[1]) and (compare[1] < 22):
                             print("Player wins")
-                            game_over = True
+                            game_over = 0
                             new_cards = True
                         if compare[0] == compare[1]:
                             print("Players Tie")
-                            game_over = True
+                            game_over = 0
                             new_cards = True
+                    uH = len(user_hand)
                     deal = False
                     hit = False
+
+                elif test_game[3].collidepoint(event.pos):
+                    game_over = 2
+                    split = True
+                    split_hand.append(user_hand.pop(1))
+                    print(user_hand)
+                    print(split_hand)
+                    print(dealer_hand)
+                    add_one_card_split(True)
+                              
             counter += 1
+            firstValue = get_values(user_hand, dealer_hand)
+            secondValue = get_values(split_hand,dealer_hand)
             if len(game_double_deck) < 10:
                 print("New deck")
                 game_double_deck = deck() * 2

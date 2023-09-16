@@ -27,8 +27,8 @@ def display_player_cards(who,card,location):
 
 
 def play_again_button():
-    play = pygame.draw.rect(screen, "white",[100,175,200,100],0,5) #x,y coordinates and size of button
-    pygame.draw.rect(screen, "black",[100,175,200,100], 3,5)
+    play = pygame.draw.rect(screen, "white",[50,50,250,200],0,5) #x,y coordinates and size of button
+    pygame.draw.rect(screen, "black",[50,50,250,200], 3,5)
     card_text = 'Play Again'
     card_color = 'black'
     font = pygame.font.Font(None, 36)
@@ -38,8 +38,8 @@ def play_again_button():
     return play
 
 def play_button():
-    play = pygame.draw.rect(screen, "white",[500,300,300,200],0,5) #x,y coordinates and size of button
-    pygame.draw.rect(screen, "black",[500,300,300,200], 3,5)
+    play = pygame.draw.rect(screen, "white",[450,250,300,200],0,5) #x,y coordinates and size of button
+    pygame.draw.rect(screen, "black",[450,250,300,200], 3,5)
     card_text = 'Deal Cards'
     card_color = 'black'
     font = pygame.font.Font(None, 36)
@@ -50,8 +50,8 @@ def play_button():
     
 
 def draw_hit_button():
-    hit = pygame.draw.circle(screen,'white',[500,650],50)
-    pygame.draw.circle(screen,'black',[500,650],53,3)
+    hit = pygame.draw.circle(screen,'white',[450,650],50)
+    pygame.draw.circle(screen,'black',[450,650],53,3)
     text = "Hit"
     color = "black"
     font = pygame.font.Font(None, 36)
@@ -61,8 +61,8 @@ def draw_hit_button():
     return hit
 
 def draw_dd_button():
-    dd = pygame.draw.circle(screen,'white',[800,650],50)
-    pygame.draw.circle(screen,'black',[800,650],53,3)
+    dd = pygame.draw.circle(screen,'white',[750,650],50)
+    pygame.draw.circle(screen,'black',[750,650],53,3)
     text = "Double"
     color = "black"
     font = pygame.font.Font(None, 36)
@@ -73,8 +73,8 @@ def draw_dd_button():
 
 
 def draw_stand_button():
-    stand = pygame.draw.circle(screen,'white',[650,650],50)
-    pygame.draw.circle(screen,'black',[650,650],53,3)
+    stand = pygame.draw.circle(screen,'white',[600,650],50)
+    pygame.draw.circle(screen,'black',[600,650],53,3)
     text = "Stand"
     color = "black"
     font = pygame.font.Font(None, 36)
@@ -237,8 +237,8 @@ def display_winner(total):
 
 #THE SPLIT FEATURE FUNCTIONS
 def draw_split_button():
-    split = pygame.draw.circle(screen,'white',[950,650],50)
-    pygame.draw.circle(screen,'black',[950,650],53,3)
+    split = pygame.draw.circle(screen,'white',[900,650],50)
+    pygame.draw.circle(screen,'black',[900,650],53,3)
     text = "Split"
     color = "black"
     font = pygame.font.Font(None, 36)
@@ -274,17 +274,17 @@ def add_one_card_split(main):
 def display_cards_split():
     if deal == True:
         for i in range(len(user_hand)):
-            display_player_cards("player",user_hand[i] ,[(350+((i-1)*100)),300,150,150])
+            display_player_cards("player",user_hand[i] ,[(150+((i-1)*100)),300,150,150])
         for i in range(len(split_hand)):
-            display_player_cards("player",split_hand[i] ,[(850+((i-1)*100)),300,150,150])
+            display_player_cards("player",split_hand[i] ,[(750+((i-1)*100)),300,150,150])
         for i in range(len(dealer_hand)):    
             display_player_cards("dealer",dealer_hand[i] ,[(550+((i-1)*50)),100,150,150])
 
     else:
         for i in range(len(user_hand)):
-            display_player_cards("player",user_hand[i] ,[(350+((i-1)*100)),300,150,150])
+            display_player_cards("player",user_hand[i] ,[(150+((i-1)*100)),300,150,150])
         for i in range(len(split_hand)):
-            display_player_cards("player",split_hand[i] ,[(850+((i-1)*100)),300,150,150])
+            display_player_cards("player",split_hand[i] ,[(750+((i-1)*100)),300,150,150])
         for i in range(len(dealer_hand)):    
             display_player_cards("dealer",dealer_hand[i] ,[(550+((i-1)*100)),100,150,150])
 
@@ -293,15 +293,56 @@ def display_player_split(total1, total2):
     card_color = 'white'
     font = pygame.font.Font(None, 36)
     surface = font.render(card_text,True,card_color)
-    rect = surface.get_rect(x=125, y=300)
+    rect = surface.get_rect(x=125, y=475)
     screen.blit(surface,rect)
 
     card_text = f'[{total2}]'
     card_color = 'white'
     font = pygame.font.Font(None, 36)
     surface = font.render(card_text,True,card_color)
-    rect = surface.get_rect(x=900, y=250)
+    rect = surface.get_rect(x=750, y=475)
     screen.blit(surface,rect)
+
+def display_winner_split(total1, total2):
+    
+    if ((total1[0] > total1[1]) and (total1[0]) < 22):
+        card_text = "Player Wins"
+    elif ((total1[0] < total1[1]) and (total1[1]) < 22):
+        card_text = "Dealer Wins"
+    elif (total1[0] == total1[1]):
+          card_text = "Tie"
+    elif total1[0] > 21:
+        card_text = "Player Busts"
+    elif total1[1] > 21:
+        card_text = "Dealer Busts"
+    else:
+        card_text = "bug"
+    
+    card_color = 'white'
+    font = pygame.font.Font(None, 56)
+    surface = font.render(card_text,True,card_color)
+    rect = surface.get_rect(x=125, y=550)
+    screen.blit(surface,rect)
+
+    
+    if ((total2[0] > total2[1]) and (total2[0]) < 22):
+        card_text = "Player Wins"
+    elif ((total2[0] < total2[1]) and (total2[1]) < 22):
+        card_text = "Dealer Wins"
+    elif (total2[0] == total2[1]):
+          card_text = "Tie"
+    elif total2[0] > 21:
+        card_text = "Player Busts"
+    elif total2[1] > 21:
+        card_text = "Dealer Busts"
+    else:
+        card_text = "bug"
+    
+    card_color1 = 'white'
+    font = pygame.font.Font(None, 56)
+    surface1 = font.render(card_text,True,card_color)
+    rect1 = surface1.get_rect(x=750, y=550)
+    screen.blit(surface1,rect1)
 
 
 pygame.init()
@@ -313,6 +354,7 @@ game_double_deck = deck()*2
 user_hand = []
 split_hand = []
 uH = len(user_hand)
+uH2 = len(user_hand)
 dealer_hand = []
 counter = 0
 hit = False
@@ -333,6 +375,7 @@ while running:
             display_cards_split()
             display_dealer_score(get_values(user_hand, dealer_hand))
             display_player_split(firstValue[0],secondValue[0])
+            display_winner_split(firstValue, secondValue)
         else:
             test_game = end_game_interface()
             display_cards_ext()

@@ -1,15 +1,23 @@
 import pygame
 
 
-def money_Entry_Box(new_color, new_text=' '):
-    textbox = pygame.draw.rect(screen, new_color, [100,100,140,50], 2)
-    color = 'black'
-    text = f"{new_text}"
+
+def renderText(user_text, location, color_text):
     font = pygame.font.Font(None, 50)
-    txt_surface = font.render(text, True, color)
-    #box = txt_surface.get_rect(center=textbox.center)
-    screen.blit(txt_surface, (textbox.x+5, textbox.y+5))   
+    text = font.render(user_text, True, color_text)
+    screen.blit(text, location)
+
+
+def moneyEntryBox(new_color, new_text=' '):
+    textbox = pygame.draw.rect(screen, new_color, [525,300,200,50], 2)
+    color = 'black'
+    text = f"${new_text}"
+    font = pygame.font.Font(None, 50)
+    surface = font.render(text, True, color)
+    screen.blit(surface, (textbox.x+5, textbox.y+5))   
+    
     return textbox
+
 
 def drawRectCard(screen1, colorCard, location):
     card = pygame.draw.rect(screen1, colorCard, location)
@@ -19,89 +27,117 @@ def drawRectCard(screen1, colorCard, location):
     surface = font.render(card_text,True,card_color)
     rect = surface.get_rect(center=card.center)
     screen.blit(surface,rect)
+    
     return card
 
-def drawCircle(screen1, colorCircle, location, size):
+
+def drawCircle(screen1, colorCircle, location, size, type):
     circle = pygame.draw.circle(screen1,colorCircle,location,size)
+    pygame.draw.circle(screen1,'black',location,size+3,3) # Draw black border for the button
     font = pygame.font.Font(None, 36)
-    text = "Deal"
+    text = type
     color = "black"
     surface = font.render(text,True,color)
     circle = surface.get_rect(center=circle.center)
     screen.blit(surface,circle)
+    
     return circle
 
-def createNewGameMenu():
-    pass
 
-# pygame setup
-pygame.init()
-screen = pygame.display.set_mode((1280, 720))
-clock = pygame.time.Clock()
-running = True
-buttons = []        #Stores game buttons for event handling
-new_game_buttons = []  #Stores game buttons for event handling but only for new game
-new_game = True
-color = pygame.Color('red')
-active = False
-text = ''
+if __name__ == "__main__":
+    # pygame setup
+    pygame.init()
+    screen = pygame.display.set_mode((1280, 720))
+    clock = pygame.time.Clock()
+    running = True
 
-while running:
-    # poll for events
-    
-    # pygame.QUIT event means the user clicked X to close your window
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if new_game == True:
-                if money_box.collidepoint(event.pos):
-                    active = not active
-                else:
-                    active = False
-                color = 'dodgerblue2' if active else "red"
-                #if new_game_buttons[0].collidepoint(event.pos):
-                if deal_button.collidepoint(event.pos):
-                        print("yobb")
-                        print(buttons)
+    new_game = True
+    color = pygame.Color('red')     # For money input box
+    active = False                  # Check if money input box is clicked on
+    pressed_enter = False           # Checks if user entered money
+    text = ""                       # Dollar amount user entered, gets converted to integer
+    user_money = 0                  # Integer amount of user entered text
+    value_error = False             # Error for user money input
+
+    while running:
+        # poll for events
+        
+        # pygame.QUIT event means the user clicked X to close your window
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+            # When user clicks their mouse button
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if new_game == True:
+                    if money_box.collidepoint(event.pos):
+                        active = not active
+                    else:
+                        active = False
+                    color = "blue" if active else "red"
+                    
+                    # Prevents user from playing game without inputting money
+                    if deal_button.collidepoint(event.pos) and user_money == 0:
+                            print("Need money")
+                    elif deal_button.collidepoint(event.pos):
+                        print('works')
                         new_game = False
-            else:
-                #A button like "Hit" has been pressed. Implement dealing logic
-                print(buttons)
-                if buttons[0].collidepoint(event.pos):
-                    print("yo")
-                elif buttons[1].collidepoint(event.pos):
-                    print("yooo")
-        
-        elif event.type == pygame.KEYDOWN:
-            if active:
-                if event.key == pygame.K_RETURN:
-                    print(text)
-                    text = ''
-                elif event.key == pygame.K_BACKSPACE:
-                    text = text[:-1]
                 else:
-                    text += event.unicode
+                    if button.collidepoint(event.pos):
+                        print("yo")
+                    elif button2.collidepoint(event.pos):
+                        print("yooo")
+            
+            # Handling the keyboard input for the money input box
+            elif event.type == pygame.KEYDOWN:
+                if active:
+                    if event.key == pygame.K_RETURN:
+                        temp_text = text
+                        # Ensures user enters correct money to play
+                        try:
+                            user_money = int(temp_text)
+                            pressed_enter = True
+                        except ValueError:
+                            # Renders warning message to screen
+                            value_error = True  
+                        print(temp_text)
+                        text = ''
+                    elif event.key == pygame.K_BACKSPACE:
+                        text = text[:-1]
+                    else:
+                        # Resets value error when user starts entering money again
+                        value_error = False
+                        text += event.unicode
 
-                
+                    
+            
+                    
+        # fill the screen with a color to wipe away anything from last frame
+        screen.fill("dark green")
         
-                
-    # fill the screen with a color to wipe away anything from last frame
-    screen.fill("dark green")
-    
-    # RENDER YOUR GAME HERE
-  
-    if new_game == True:
-        #new_game_buttons.append(drawCircle(screen, "white", [500,500], 50))
-        deal_button = drawCircle(screen, "white", [500,500], 50)
-        money_box = money_Entry_Box(color, text)
-    else:
-        buttons.append(drawRectCard(screen, "white",[100,100,100,100]))
-        buttons.append(drawRectCard(screen, "white",[500,100,100,300]))
+        # RENDER YOUR GAME HERE
+        # New game menu buttons and money
+        if new_game:
+            renderText("BLACKJACK!!!", (475, 50), "white" )
+            renderText("Input your money and press 'Play'", (325, 100), "white" )
+            deal_button = drawCircle(screen, "white", [615,500], 75, "Play")
+            money_box = moneyEntryBox(color, text)
+            
+            # When user presses enter on their keyboard
+            if value_error:
+                renderText("Invalid, must enter a number", (425, 200), "red")
+            
+            elif pressed_enter:
+                renderText(f"You entered: ${temp_text}", (500, 350), "white")
+        
+        # Render game after the main menu phase is over        
+        else:
+            button = drawRectCard(screen, "white",[100,100,100,100])
+            button2 = drawRectCard(screen, "white",[500,100,100,300])
 
-    # flip() the display to put your work on screen
-    pygame.display.flip()
-    
-    clock.tick(60)  # limits FPS to 60
+        # flip() the display to put your work on screen
+        pygame.display.flip()
+        
+        clock.tick(60)  # limits FPS to 60
 
-pygame.quit()
+    pygame.quit()

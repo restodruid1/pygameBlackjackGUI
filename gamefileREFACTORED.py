@@ -31,7 +31,7 @@ def drawRectCard(screen1, colorCard, location):
     return card
 
 
-def drawCircle(screen1, colorCircle, location, size, type):
+def drawCircle(screen1, colorCircle, location, size, type=''):
     circle = pygame.draw.circle(screen1,colorCircle,location,size)
     pygame.draw.circle(screen1,'black',location,size+3,3) # Draw black border for the button
     font = pygame.font.Font(None, 36)
@@ -44,6 +44,17 @@ def drawCircle(screen1, colorCircle, location, size, type):
     return circle
 
 
+def createDeck():
+    card_values = ['2','3','4','5','6','7','8','9','10','J','Q','K','A']
+    card_types = ['Club','Spades','Hearts','Diamonds']
+    deck = []
+    for ele in card_types:
+        for value in card_values:
+            deck.append((value, ele))
+            
+    return deck
+
+
 if __name__ == "__main__":
     # pygame setup
     pygame.init()
@@ -52,12 +63,15 @@ if __name__ == "__main__":
     running = True
 
     new_game = True
+    deck = createDeck() * 2         # Create two decks of cards(can scale if more decks wanted)
     color = pygame.Color('red')     # For money input box
     active = False                  # Check if money input box is clicked on
     pressed_enter = False           # Checks if user entered money
     text = ""                       # Dollar amount user entered, gets converted to integer
     user_money = 0                  # Integer amount of user entered text
+    user_bet = 0                    # Keep track of players bet $
     value_error = False             # Error for user money input
+    
 
     while running:
         # poll for events
@@ -67,7 +81,7 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 running = False
 
-            # When user clicks their mouse button
+            # Logic that occurs when user input is recieved
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if new_game == True:
                     if money_box.collidepoint(event.pos):
@@ -83,10 +97,24 @@ if __name__ == "__main__":
                         print('works')
                         new_game = False
                 else:
-                    if button.collidepoint(event.pos):
+                    if chip5.collidepoint(event.pos):
+                        if user_money >= 5:
+                            user_money -= 5
+                            user_bet += 5
                         print("yo")
-                    elif button2.collidepoint(event.pos):
+                    elif chip25.collidepoint(event.pos):
+                        if user_money >= 25:
+                            user_money -= 25
+                            user_bet += 25
                         print("yooo")
+                    elif chip50.collidepoint(event.pos):
+                        if user_money >= 50:
+                            user_money -= 25
+                            user_bet += 50
+                        print("yooo3")
+                    elif deal.collidepoint(event.pos):
+                        if user_bet > 0:
+                            print("deal cards")
             
             # Handling the keyboard input for the money input box
             elif event.type == pygame.KEYDOWN:
@@ -132,8 +160,14 @@ if __name__ == "__main__":
         
         # Render game after the main menu phase is over        
         else:
-            button = drawRectCard(screen, "white",[100,100,100,100])
-            button2 = drawRectCard(screen, "white",[500,100,100,300])
+            # Player betting phase, before cards are dealt
+            renderText(f"Player money ${user_money}",[10,10],"white")
+            chip5 = drawCircle(screen, "red", [1000,400], 50, "$5")
+            chip25 = drawCircle(screen, "blue", [1000,525], 50, "$25")
+            chip50 = drawCircle(screen, "grey", [1000,650], 50, "$50")
+            drawCircle(screen, "white", [615,500], 75)
+            drawCircle(screen, "green", [615,500], 50, f'${user_bet}')
+            deal = drawCircle(screen, "white", [415,500], 75, "DEAL")
 
         # flip() the display to put your work on screen
         pygame.display.flip()

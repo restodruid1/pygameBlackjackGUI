@@ -1,4 +1,5 @@
 import pygame
+import random
 
 
 
@@ -19,9 +20,9 @@ def moneyEntryBox(new_color, new_text=' '):
     return textbox
 
 
-def drawRectCard(screen1, colorCard, location):
+def drawRectCard(screen1, colorCard, location, text):
     card = pygame.draw.rect(screen1, colorCard, location)
-    card_text = 'Play Again'
+    card_text = text
     card_color = 'black'
     font = pygame.font.Font(None, 36)
     surface = font.render(card_text,True,card_color)
@@ -55,6 +56,22 @@ def createDeck():
     return deck
 
 
+def player_cards():
+    for i in range(2):
+        user_card = random.choice(deck)
+        #print(user_card)
+        user_hand.append(user_card)
+        deck.remove(user_card)
+
+    
+def dealer_cards():
+    for i in range(2):
+        dealer_card = random.choice(deck)
+        #print(user_card)
+        dealer_hand.append(dealer_card)
+        deck.remove(dealer_card)
+
+
 if __name__ == "__main__":
     # pygame setup
     pygame.init()
@@ -71,7 +88,10 @@ if __name__ == "__main__":
     user_money = 0                  # Integer amount of user entered text
     user_bet = 0                    # Keep track of players bet $
     value_error = False             # Error for user money input
-    cards_dealt = False
+    cards_dealt = False             # Tracks when cards are dealt
+    user_hand = []                  # Stores the players current hand
+    dealer_hand = []                # Stores the dealers current hand
+
 
     while running:
         # poll for events
@@ -91,13 +111,18 @@ if __name__ == "__main__":
                     color = "blue" if active else "red"
                     
                     # Prevents user from playing game without inputting money
-                    if deal_button.collidepoint(event.pos) and user_money == 0:
+                    if deal_button.collidepoint(event.pos) and user_money < 1:
                             print("Need money")
                     elif deal_button.collidepoint(event.pos):
                         print('works')
                         new_game = False
                 else:
-                    if chip5.collidepoint(event.pos):
+                    if chip1.collidepoint(event.pos):
+                        if user_money >= 1:
+                            user_money -= 1
+                            user_bet += 1
+                        print("yo9")
+                    elif chip5.collidepoint(event.pos):
                         if user_money >= 5:
                             user_money -= 5
                             user_bet += 5
@@ -116,6 +141,8 @@ if __name__ == "__main__":
                         if user_bet > 0:
                             print("deal cards")
                             cards_dealt = True
+                            player_cards()
+                            dealer_cards()
             
             # Handling the keyboard input for the money input box
             elif event.type == pygame.KEYDOWN:
@@ -163,6 +190,7 @@ if __name__ == "__main__":
         elif not cards_dealt:
             # Player betting phase, before cards are dealt
             renderText(f"Player money ${user_money}",[10,10],"white")
+            chip1 = drawCircle(screen, "white", [1000,275], 50, "$1")
             chip5 = drawCircle(screen, "red", [1000,400], 50, "$5")
             chip25 = drawCircle(screen, "blue", [1000,525], 50, "$25")
             chip50 = drawCircle(screen, "grey", [1000,650], 50, "$50")
@@ -171,7 +199,17 @@ if __name__ == "__main__":
             deal = drawCircle(screen, "white", [415,500], 75, "DEAL")
 
         elif cards_dealt:
-            player_card_one = drawRectCard(screen, "white",[400,400,50,50])
+            # Displays each player card 
+            for i in range(len(user_hand)):
+                drawRectCard(screen, "white",[400+(i * 100), 400,100,100], f"{user_hand[i][0]}")
+
+            for i in range(len(dealer_hand)-1):
+                drawRectCard(screen, "white",[400+(i * 100), 100,100,100], f"{dealer_hand[i][0]}")
+            
+            hit = drawCircle(screen, "white", [400,600], 50, "Hit")
+            stand = drawCircle(screen, "white", [515,600], 50, "Stand")
+            double_down = drawCircle(screen, "white", [630,600], 50, "DD")
+            split = drawCircle(screen, "white", [745,600], 50, "Split")
 
         # flip() the display to put your work on screen
         pygame.display.flip()

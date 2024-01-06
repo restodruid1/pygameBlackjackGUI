@@ -71,7 +71,7 @@ if __name__ == "__main__":
     user_money = 0                  # Integer amount of user entered text
     user_bet = 0                    # Keep track of players bet $
     value_error = False             # Error for user money input
-    
+    cards_dealt = False
 
     while running:
         # poll for events
@@ -115,6 +115,7 @@ if __name__ == "__main__":
                     elif deal.collidepoint(event.pos):
                         if user_bet > 0:
                             print("deal cards")
+                            cards_dealt = True
             
             # Handling the keyboard input for the money input box
             elif event.type == pygame.KEYDOWN:
@@ -159,7 +160,7 @@ if __name__ == "__main__":
                 renderText(f"You entered: ${temp_text}", (500, 350), "white")
         
         # Render game after the main menu phase is over        
-        else:
+        elif not cards_dealt:
             # Player betting phase, before cards are dealt
             renderText(f"Player money ${user_money}",[10,10],"white")
             chip5 = drawCircle(screen, "red", [1000,400], 50, "$5")
@@ -168,6 +169,9 @@ if __name__ == "__main__":
             drawCircle(screen, "white", [615,500], 75)
             drawCircle(screen, "green", [615,500], 50, f'${user_bet}')
             deal = drawCircle(screen, "white", [415,500], 75, "DEAL")
+
+        elif cards_dealt:
+            player_card_one = drawRectCard(screen, "white",[400,400,50,50])
 
         # flip() the display to put your work on screen
         pygame.display.flip()

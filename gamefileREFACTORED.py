@@ -20,7 +20,7 @@ def moneyEntryBox(new_color, new_text=' '):
     return textbox
 
 
-def drawRectCard(screen1, colorCard, location, text):
+def drawRectCard(screen1, colorCard, location, text=''):
     card = pygame.draw.rect(screen1, colorCard, location)
     card_text = text
     card_color = 'black'
@@ -45,31 +45,28 @@ def drawCircle(screen1, colorCircle, location, size, type=''):
     return circle
 
 
-def createDeck():
+def createShuffledDeck():
     card_values = ['2','3','4','5','6','7','8','9','10','J','Q','K','A']
     card_types = ['Club','Spades','Hearts','Diamonds']
     deck = []
     for ele in card_types:
         for value in card_values:
             deck.append((value, ele))
-            
+    random.shuffle(deck)      
+    
     return deck
 
 
-def player_cards():
-    for i in range(2):
-        user_card = random.choice(deck)
-        #print(user_card)
+def player_cards(numCards):
+    for i in range(numCards):
+        user_card = deck.pop()
         user_hand.append(user_card)
-        deck.remove(user_card)
 
     
-def dealer_cards():
-    for i in range(2):
-        dealer_card = random.choice(deck)
-        #print(user_card)
+def dealer_cards(numCards):
+    for i in range(numCards):
+        dealer_card = deck.pop()
         dealer_hand.append(dealer_card)
-        deck.remove(dealer_card)
 
 
 if __name__ == "__main__":
@@ -80,18 +77,21 @@ if __name__ == "__main__":
     running = True
 
     new_game = True
-    deck = createDeck() * 2         # Create two decks of cards(can scale if more decks wanted)
-    color = pygame.Color('red')     # For money input box
-    active = False                  # Check if money input box is clicked on
-    pressed_enter = False           # Checks if user entered money
-    text = ""                       # Dollar amount user entered, gets converted to integer
-    user_money = 0                  # Integer amount of user entered text
-    user_bet = 0                    # Keep track of players bet $
-    value_error = False             # Error for user money input
-    cards_dealt = False             # Tracks when cards are dealt
-    user_hand = []                  # Stores the players current hand
-    dealer_hand = []                # Stores the dealers current hand
-
+    deck = createShuffledDeck() * 2     # Create two decks of shuffled cards(can scale if more decks wanted)
+    color = pygame.Color('red')         # For money input box
+    active = False                      # Check if money input box is clicked on
+    pressed_enter = False               # Checks if user entered money
+    text = ""                           # Dollar amount user entered, gets converted to integer
+    user_money = 0                      # Integer amount of user entered text
+    user_bet = 0                        # Keep track of players bet $
+    value_error = False                 # Error for user money input
+    cards_dealt = False                 # Tracks when cards are dealt
+    user_hand = []                      # Stores the players current hand
+    dealer_hand = []                    # Stores the dealers current hand
+    played = False                      # 
+    dd = False                          # Checks if player doubled down 
+    able_to_split = False               # Checks if player can split
+    splitting = False                   # Checks if player split
 
     while running:
         # poll for events
@@ -116,7 +116,8 @@ if __name__ == "__main__":
                     elif deal_button.collidepoint(event.pos):
                         print('works')
                         new_game = False
-                else:
+                elif not new_game and not cards_dealt:
+                    # Logic for placing bets phase
                     if chip1.collidepoint(event.pos):
                         if user_money >= 1:
                             user_money -= 1
@@ -141,9 +142,48 @@ if __name__ == "__main__":
                         if user_bet > 0:
                             print("deal cards")
                             cards_dealt = True
-                            player_cards()
-                            dealer_cards()
-            
+                            player_cards(2)
+                            dealer_cards(2)
+                            if user_hand[0][0] == user_hand[1][0]:
+                                print("able_to_split")
+                                able_to_split = True
+                elif cards_dealt:
+                    if able_to_split:
+                        # If able to split, these 4 buttons will be functional
+                        if hit.collidepoint(event.pos):
+                            player_cards(1)
+                            played = True
+                        elif stand.collidepoint(event.pos):
+                            print()
+                            played = True
+                        elif double_down.collidepoint(event.pos):
+                            dd = True
+                            played = True
+                            player_cards(1)
+                        elif split.collidepoint(event.pos):
+                            print("works")
+                            splitting = True
+                            played = True
+                    elif not played:
+                        # If not able to split, these 3 buttons will be functional
+                        if hit.collidepoint(event.pos):
+                            player_cards(1)
+                            played = True
+                        elif stand.collidepoint(event.pos):
+                            print()
+                            played = True
+                        elif double_down.collidepoint(event.pos):
+                            dd = True
+                            player_cards(1)
+                            played = True
+                    elif played:
+                        # General hit and stand buttons for when player has made a move already
+                        if hit.collidepoint(event.pos):
+                            player_cards(1)
+                        elif stand.collidepoint(event.pos):
+                            print()
+                    
+
             # Handling the keyboard input for the money input box
             elif event.type == pygame.KEYDOWN:
                 if active:
@@ -189,28 +229,64 @@ if __name__ == "__main__":
         # Render game after the main menu phase is over        
         elif not cards_dealt:
             # Player betting phase, before cards are dealt
-            renderText(f"Player money ${user_money}",[10,10],"white")
+            renderText(f"Total: ${user_money}",[10,545],"white")
             chip1 = drawCircle(screen, "white", [1000,275], 50, "$1")
             chip5 = drawCircle(screen, "red", [1000,400], 50, "$5")
             chip25 = drawCircle(screen, "blue", [1000,525], 50, "$25")
             chip50 = drawCircle(screen, "grey", [1000,650], 50, "$50")
-            drawCircle(screen, "white", [615,500], 75)
-            drawCircle(screen, "green", [615,500], 50, f'${user_bet}')
-            deal = drawCircle(screen, "white", [415,500], 75, "DEAL")
+            drawCircle(screen, "white", [615,545], 60)
+            drawCircle(screen, "green", [615,545], 50, f'${user_bet}')
+            deal = drawCircle(screen, "white", [415,545], 60, "DEAL")
 
+        elif cards_dealt and played:
+            # Cards have been dealt and player has made at least one move
+            if dd:
+                renderText(f"Total: ${user_money}",[10,545],"white")
+                # Displays each player card 
+                for i in range(len(user_hand)):
+                    drawRectCard(screen, "white",[400+(i * 100), 400,100,100], f"{user_hand[i][0]}")
+
+                for i in range(len(dealer_hand)-1):
+                    drawRectCard(screen, "white",[400+(i * 100), 100,100,100], f"{dealer_hand[i][0]}")
+                
+                drawCircle(screen, "white", [615,545], 60)
+                drawCircle(screen, "green", [615,545], 50, f'${user_bet}')
+            elif able_to_split:
+                print("")
+            else:
+                renderText(f"Total: ${user_money}",[10,545],"white")
+                # Displays each player card 
+                for i in range(len(user_hand)):
+                    drawRectCard(screen, "white",[400+(i * 100), 400,100,100], f"{user_hand[i][0]}")
+
+                for i in range(len(dealer_hand)-1):
+                    drawRectCard(screen, "white",[400+(i * 100), 100,100,100], f"{dealer_hand[i][0]}")
+                
+                drawCircle(screen, "white", [615,545], 60)
+                drawCircle(screen, "green", [615,545], 50, f'${user_bet}')
+                hit = drawCircle(screen, "white", [400,665], 50, "Hit")
+                stand = drawCircle(screen, "white", [515,665], 50, "Stand")
+                
         elif cards_dealt:
+            # First cards have been dealt but no player move has been made
+            renderText(f"Total: ${user_money}",[10,545],"white")
             # Displays each player card 
             for i in range(len(user_hand)):
                 drawRectCard(screen, "white",[400+(i * 100), 400,100,100], f"{user_hand[i][0]}")
+            # Display dealer card with one hidden
+            drawRectCard(screen, "white",[400,100,100,100], f"{dealer_hand[0][0]}")
+            drawRectCard(screen, "white",[500,100,100,100])
 
-            for i in range(len(dealer_hand)-1):
-                drawRectCard(screen, "white",[400+(i * 100), 100,100,100], f"{dealer_hand[i][0]}")
-            
-            hit = drawCircle(screen, "white", [400,600], 50, "Hit")
-            stand = drawCircle(screen, "white", [515,600], 50, "Stand")
-            double_down = drawCircle(screen, "white", [630,600], 50, "DD")
-            split = drawCircle(screen, "white", [745,600], 50, "Split")
-
+            drawCircle(screen, "white", [615,545], 60)
+            drawCircle(screen, "green", [615,545], 50, f'${user_bet}')
+            hit = drawCircle(screen, "white", [400,665], 50, "Hit")
+            stand = drawCircle(screen, "white", [515,665], 50, "Stand")
+            double_down = drawCircle(screen, "white", [630,665], 50, "DD")
+            # Split feature shows up when player has two cards of same value          
+            if able_to_split:
+                print(user_hand[0][0], user_hand[1][0])
+                split = drawCircle(screen, "white", [745,665], 50, "Split")
+        
         # flip() the display to put your work on screen
         pygame.display.flip()
         

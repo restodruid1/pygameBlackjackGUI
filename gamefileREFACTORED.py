@@ -22,6 +22,7 @@ def moneyEntryBox(new_color, new_text=' '):
 
 def drawRectCard(screen1, colorCard, location, text=''):
     card = pygame.draw.rect(screen1, colorCard, location)
+    pygame.draw.rect(screen, "black",location, 3,5)
     card_text = text
     card_color = 'black'
     font = pygame.font.Font(None, 36)
@@ -68,6 +69,35 @@ def dealer_cards(numCards):
         dealer_card = deck.pop()
         dealer_hand.append(dealer_card)
 
+def get_values(cards):
+    value = 0
+    aces = 0
+    
+    for card in cards:    
+        if card[0] in ['J','Q','K']:
+            value += 10
+        elif card[0] in ['2', '3', '4', '5', '6', '7', '8', '9', '10']:
+            value += int(card[0])
+        elif card[0] in ['A']:
+            value += 11
+            aces += 1
+        if value > 21 and aces > 0:
+            aces -= 1
+            value -= 10
+    
+    return value
+
+
+def compare_values():
+    player_value = get_values(user_hand)
+    dealer_value = get_values(dealer_hand)
+    if (player_value > dealer_value and player_value < 22) or dealer_value > 21:
+        print("player wins")
+    elif player_value < dealer_value:
+        print("dealer wins")
+    elif player_value == dealer_value:
+        print("Tie")
+
 
 if __name__ == "__main__":
     # pygame setup
@@ -92,6 +122,9 @@ if __name__ == "__main__":
     dd = False                          # Checks if player doubled down 
     able_to_split = False               # Checks if player can split
     splitting = False                   # Checks if player split
+    dealer_turn = False
+    hand_over = False                   # Signifies the hand is over, place bets again
+
 
     while running:
         # poll for events
@@ -116,6 +149,18 @@ if __name__ == "__main__":
                     elif deal_button.collidepoint(event.pos):
                         print('works')
                         new_game = False
+                elif hand_over:
+                    # Reset game to placing bets menu
+                    if new_bets.collidepoint(event.pos):
+                        user_hand = []
+                        dealer_hand = []
+                        played = False
+                        cards_dealt = False
+                        hand_over = False
+                        dd = False
+                        splitting = False
+                        able_to_split = False
+                        user_bet = 0
                 elif not new_game and not cards_dealt:
                     # Logic for placing bets phase
                     if chip1.collidepoint(event.pos):
@@ -144,11 +189,17 @@ if __name__ == "__main__":
                             cards_dealt = True
                             player_cards(2)
                             dealer_cards(2)
-                            if user_hand[0][0] == user_hand[1][0]:
+                            if get_values(user_hand) == 21:
+                                print("player wins")
+                                hand_over = True
+                            elif get_values(dealer_hand) == 21:
+                                print("dealer wins")
+                                hand_over = True
+                            elif user_hand[0][0] == user_hand[1][0]:
                                 print("able_to_split")
                                 able_to_split = True
                 elif cards_dealt:
-                    if able_to_split:
+                    """if able_to_split:
                         # If able to split, these 4 buttons will be functional
                         if hit.collidepoint(event.pos):
                             player_cards(1)
@@ -163,25 +214,50 @@ if __name__ == "__main__":
                         elif split.collidepoint(event.pos):
                             print("works")
                             splitting = True
-                            played = True
-                    elif not played:
+                            played = True"""
+                    if not played:
                         # If not able to split, these 3 buttons will be functional
                         if hit.collidepoint(event.pos):
                             player_cards(1)
                             played = True
+                            if get_values(user_hand) > 21:
+                                print("player loses")
+                                hand_over = True
                         elif stand.collidepoint(event.pos):
-                            print()
+                            while get_values(dealer_hand) < 17:
+                                dealer_cards(1)
                             played = True
+                            compare_values()
+                            hand_over = True
                         elif double_down.collidepoint(event.pos):
                             dd = True
-                            player_cards(1)
                             played = True
+                            player_cards(1)
+                            while get_values(dealer_hand) < 17:
+                                dealer_cards(1)
+                            compare_values()
+                            hand_over = True
                     elif played:
                         # General hit and stand buttons for when player has made a move already
                         if hit.collidepoint(event.pos):
                             player_cards(1)
+                            if get_values(user_hand) > 21:
+                                print("player loses")
+                                hand_over = True
                         elif stand.collidepoint(event.pos):
-                            print()
+                            while get_values(dealer_hand) < 17:
+                                dealer_cards(1)
+                            compare_values()
+                            hand_over = True
+                            """if get_values(user_hand) > get_values(dealer_hand) or get_values(dealer_hand) > 21:
+                                print("player wins")
+                                hand_over = True
+                            elif get_values(user_hand) < get_values(dealer_hand):
+                                print("dealer wins")
+                                hand_over = True
+                            elif get_values(user_hand) == get_values(dealer_hand):
+                                print("Tie")
+                                hand_over = True"""
                     
 
             # Handling the keyboard input for the money input box
@@ -238,29 +314,43 @@ if __name__ == "__main__":
             drawCircle(screen, "green", [615,545], 50, f'${user_bet}')
             deal = drawCircle(screen, "white", [415,545], 60, "DEAL")
 
+        elif hand_over:
+            renderText(f"Total: ${user_money}",[10,545],"white")
+            # Displays each player card 
+            for i in range(len(user_hand)):
+                drawRectCard(screen, "white",[400+(i * 100), 300,150,150], f"{user_hand[i][0]}")
+
+            for i in range(len(dealer_hand)):
+                drawRectCard(screen, "white",[400+(i * 100), 100,150,150], f"{dealer_hand[i][0]}")
+            
+            drawCircle(screen, "white", [615,545], 60)
+            drawCircle(screen, "green", [615,545], 50, f'${user_bet}')
+            new_bets = drawCircle(screen, "white", [915,545], 60, "New Bets")
+        
         elif cards_dealt and played:
             # Cards have been dealt and player has made at least one move
             if dd:
                 renderText(f"Total: ${user_money}",[10,545],"white")
                 # Displays each player card 
                 for i in range(len(user_hand)):
-                    drawRectCard(screen, "white",[400+(i * 100), 400,100,100], f"{user_hand[i][0]}")
+                    drawRectCard(screen, "white",[400+(i * 100), 300,150,150], f"{user_hand[i][0]}")
 
-                for i in range(len(dealer_hand)-1):
-                    drawRectCard(screen, "white",[400+(i * 100), 100,100,100], f"{dealer_hand[i][0]}")
+                for i in range(len(dealer_hand)):
+                    drawRectCard(screen, "white",[400+(i * 100), 100,150,150], f"{dealer_hand[i][0]}")
                 
                 drawCircle(screen, "white", [615,545], 60)
                 drawCircle(screen, "green", [615,545], 50, f'${user_bet}')
-            elif able_to_split:
-                print("")
+            elif splitting:
+                print("")              
             else:
                 renderText(f"Total: ${user_money}",[10,545],"white")
                 # Displays each player card 
                 for i in range(len(user_hand)):
-                    drawRectCard(screen, "white",[400+(i * 100), 400,100,100], f"{user_hand[i][0]}")
+                    drawRectCard(screen, "white",[400+(i * 100), 300,150,150], f"{user_hand[i][0]}")
 
                 for i in range(len(dealer_hand)-1):
-                    drawRectCard(screen, "white",[400+(i * 100), 100,100,100], f"{dealer_hand[i][0]}")
+                    drawRectCard(screen, "white",[400+(i * 100), 100,150,150], f"{dealer_hand[i][0]}")
+                    drawRectCard(screen, "white",[500,100,150,150])
                 
                 drawCircle(screen, "white", [615,545], 60)
                 drawCircle(screen, "green", [615,545], 50, f'${user_bet}')
@@ -272,10 +362,10 @@ if __name__ == "__main__":
             renderText(f"Total: ${user_money}",[10,545],"white")
             # Displays each player card 
             for i in range(len(user_hand)):
-                drawRectCard(screen, "white",[400+(i * 100), 400,100,100], f"{user_hand[i][0]}")
+                drawRectCard(screen, "white",[400+(i * 100), 300,150,150], f"{user_hand[i][0]}")
             # Display dealer card with one hidden
-            drawRectCard(screen, "white",[400,100,100,100], f"{dealer_hand[0][0]}")
-            drawRectCard(screen, "white",[500,100,100,100])
+            drawRectCard(screen, "white",[400,100,150,150], f"{dealer_hand[0][0]}")
+            drawRectCard(screen, "white",[500,100,150,150])
 
             drawCircle(screen, "white", [615,545], 60)
             drawCircle(screen, "green", [615,545], 50, f'${user_bet}')
@@ -284,7 +374,7 @@ if __name__ == "__main__":
             double_down = drawCircle(screen, "white", [630,665], 50, "DD")
             # Split feature shows up when player has two cards of same value          
             if able_to_split:
-                print(user_hand[0][0], user_hand[1][0])
+                #print(user_hand[0][0], user_hand[1][0])
                 split = drawCircle(screen, "white", [745,665], 50, "Split")
         
         # flip() the display to put your work on screen

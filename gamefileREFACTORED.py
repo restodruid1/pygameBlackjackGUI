@@ -92,11 +92,11 @@ def compare_values():
     player_value = get_values(user_hand)
     dealer_value = get_values(dealer_hand)
     if (player_value > dealer_value and player_value < 22) or dealer_value > 21:
-        print("player wins")
+        return 0
     elif player_value < dealer_value:
-        print("dealer wins")
+        return 1
     elif player_value == dealer_value:
-        print("Tie")
+        return 2
 
 
 if __name__ == "__main__":
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     splitting = False                   # Checks if player split
     dealer_turn = False
     hand_over = False                   # Signifies the hand is over, place bets again
-
+    
 
     while running:
         # poll for events
@@ -161,6 +161,9 @@ if __name__ == "__main__":
                         splitting = False
                         able_to_split = False
                         user_bet = 0
+                        if len(deck) <= 10:
+                            deck = createShuffledDeck() * 2
+                            print("shuffling new deck")
                 elif not new_game and not cards_dealt:
                     # Logic for placing bets phase
                     if chip1.collidepoint(event.pos):
@@ -180,7 +183,7 @@ if __name__ == "__main__":
                         print("yooo")
                     elif chip50.collidepoint(event.pos):
                         if user_money >= 50:
-                            user_money -= 25
+                            user_money -= 50
                             user_bet += 50
                         print("yooo3")
                     elif deal.collidepoint(event.pos):
@@ -190,10 +193,9 @@ if __name__ == "__main__":
                             player_cards(2)
                             dealer_cards(2)
                             if get_values(user_hand) == 21:
-                                print("player wins")
+                                user_money += (user_bet * 3)
                                 hand_over = True
                             elif get_values(dealer_hand) == 21:
-                                print("dealer wins")
                                 hand_over = True
                             elif user_hand[0][0] == user_hand[1][0]:
                                 print("able_to_split")
@@ -228,15 +230,26 @@ if __name__ == "__main__":
                                 dealer_cards(1)
                             played = True
                             compare_values()
+                            if compare_values() == 0:
+                                    user_money += (user_bet * 2)
+                            elif compare_values() == 2:
+                                user_money += user_bet
                             hand_over = True
                         elif double_down.collidepoint(event.pos):
-                            dd = True
-                            played = True
-                            player_cards(1)
-                            while get_values(dealer_hand) < 17:
-                                dealer_cards(1)
-                            compare_values()
-                            hand_over = True
+                            # Can't dd without enough money
+                            if user_money >= user_bet:
+                                user_money -= user_bet
+                                user_bet += user_bet
+                                dd = True
+                                played = True
+                                player_cards(1)
+                                while get_values(dealer_hand) < 17:
+                                    dealer_cards(1)
+                                if compare_values() == 0:
+                                    user_money += (user_bet * 2)
+                                elif compare_values() == 2:
+                                    user_money += user_bet 
+                                hand_over = True
                     elif played:
                         # General hit and stand buttons for when player has made a move already
                         if hit.collidepoint(event.pos):
@@ -248,6 +261,10 @@ if __name__ == "__main__":
                             while get_values(dealer_hand) < 17:
                                 dealer_cards(1)
                             compare_values()
+                            if compare_values() == 0:
+                                    user_money += (user_bet * 2)
+                            elif compare_values() == 2:
+                                user_money += user_bet
                             hand_over = True
                             """if get_values(user_hand) > get_values(dealer_hand) or get_values(dealer_hand) > 21:
                                 print("player wins")
@@ -316,6 +333,7 @@ if __name__ == "__main__":
 
         elif hand_over:
             renderText(f"Total: ${user_money}",[10,545],"white")
+            
             # Displays each player card 
             for i in range(len(user_hand)):
                 drawRectCard(screen, "white",[400+(i * 100), 300,150,150], f"{user_hand[i][0]}")
@@ -326,6 +344,12 @@ if __name__ == "__main__":
             drawCircle(screen, "white", [615,545], 60)
             drawCircle(screen, "green", [615,545], 50, f'${user_bet}')
             new_bets = drawCircle(screen, "white", [915,545], 60, "New Bets")
+            if compare_values() == 0:
+                renderText(f"Player Wins",[600,50],"white")
+            elif compare_values() == 1:
+                renderText(f"Dealer Wins",[600,50],"white")    
+            else: 
+                renderText(f"Tie",[600,50],"white")
         
         elif cards_dealt and played:
             # Cards have been dealt and player has made at least one move

@@ -46,14 +46,18 @@ def drawCircle(screen1, colorCircle, location, size, type=''):
     return circle
 
 
-def createShuffledDeck():
+def createShuffledDeck(decks):
     card_values = ['2','3','4','5','6','7','8','9','10','J','Q','K','A']
     card_types = ['Club','Spades','Hearts','Diamonds']
     deck = []
+
     for ele in card_types:
         for value in card_values:
             deck.append((value, ele))
-    random.shuffle(deck)      
+    # Create any number of decks, then shuffle them
+    deck = deck * decks
+    random.shuffle(deck)
+         
     
     return deck
 
@@ -112,7 +116,7 @@ if __name__ == "__main__":
     running = True
 
     new_game = True
-    deck = createShuffledDeck() * 2     # Create two decks of shuffled cards(can scale if more decks wanted)
+    deck = createShuffledDeck(2)        # Create two decks of shuffled cards(can scale if more decks wanted)
     color = pygame.Color('red')         # For money input box
     active = False                      # Check if money input box is clicked on
     pressed_enter = False               # Checks if user entered money
@@ -132,7 +136,7 @@ if __name__ == "__main__":
     hand_over = False                   # Signifies the hand is over, place bets again
     not_enough_money = False            # Player has no money for dd or split
     left_stand = False
-
+    
 
     while running:
         # poll for events
@@ -153,9 +157,8 @@ if __name__ == "__main__":
                     
                     # Prevents user from playing game without inputting money
                     if deal_button.collidepoint(event.pos) and user_money < 1:
-                            print("Need money")
+                            print()
                     elif deal_button.collidepoint(event.pos):
-                        print('works')
                         new_game = False
                 elif hand_over:
                     # Reset game to placing bets menu
@@ -172,8 +175,9 @@ if __name__ == "__main__":
                         user_bet = 0
                         not_enough_money = False
                         left_stand = False
+                        pressed_enter = False
                         if len(deck) <= 10:
-                            deck = createShuffledDeck() * 2
+                            deck = createShuffledDeck(2)
                             print("shuffling new deck")
                         # Resets game to main menu if player has no money left
                         if user_money == 0:
@@ -185,35 +189,31 @@ if __name__ == "__main__":
                         if user_money >= 1:
                             user_money -= 1
                             user_bet += 1
-                        print("yo9")
                     elif chip5.collidepoint(event.pos):
                         if user_money >= 5:
                             user_money -= 5
                             user_bet += 5
-                        print("yo")
                     elif chip25.collidepoint(event.pos):
                         if user_money >= 25:
                             user_money -= 25
                             user_bet += 25
-                        print("yooo")
                     elif chip50.collidepoint(event.pos):
                         if user_money >= 50:
                             user_money -= 50
                             user_bet += 50
-                        print("yooo3")
                     elif deal.collidepoint(event.pos):
                         if user_bet > 0:
-                            print("deal cards")
                             cards_dealt = True
-                            player_cards(2)
-                            dealer_cards(2)
+                            player_cards(1)
+                            dealer_cards(1)
+                            player_cards(1)
+                            dealer_cards(1)
                             if get_values(user_hand) == 21:
                                 user_money += (user_bet * 3)
                                 hand_over = True
                             elif get_values(dealer_hand) == 21:
                                 hand_over = True
                             elif user_hand[0][0] == user_hand[1][0]:
-                                print("able_to_split")
                                 able_to_split = True
                 elif cards_dealt:
                     if not played:
@@ -222,7 +222,6 @@ if __name__ == "__main__":
                             player_cards(1)
                             played = True
                             if get_values(user_hand) > 21:
-                                print("player loses")
                                 hand_over = True
                         elif stand.collidepoint(event.pos):
                             while get_values(dealer_hand) < 17:
@@ -277,27 +276,37 @@ if __name__ == "__main__":
                                             while get_values(dealer_hand) < 17:
                                                 dealer_cards(1)
                                         hand_over = True
+                                        if compare_values(user_hand) == 0:
+                                            user_money += user_bet
+                                        elif compare_values(user_hand) == 2:
+                                            user_money += (user_bet / 2)
+                                        if compare_values(split_hand) == 0:
+                                            user_money += user_bet 
+                                        elif compare_values(split_hand) == 2:
+                                            user_money += (user_bet / 2)
                                 else:
                                     player_cards(1)
                     
                             elif stand.collidepoint(event.pos):
-                                if left_stand:
+                                if left_stand or get_values(user_hand) > 21:
                                     while get_values(dealer_hand) < 17:
                                         dealer_cards(1)
                                     hand_over = True
+                                    if compare_values(user_hand) == 0:
+                                            user_money += user_bet
+                                    elif compare_values(user_hand) == 2:
+                                        user_money += (user_bet / 2)
+                                    if compare_values(split_hand) == 0:
+                                        user_money += user_bet 
+                                    elif compare_values(split_hand) == 2:
+                                        user_money += (user_bet / 2)
                                 else:
                                     left_stand = True
-                                
-                                #if compare_values() == 0:
-                                        #user_money += (user_bet * 2)
-                                #elif compare_values() == 2:
-                                    #user_money += user_bet
                                     
                         # General hit and stand buttons for when player has made a move already              
                         elif hit.collidepoint(event.pos):
                             player_cards(1)
                             if get_values(user_hand) > 21:
-                                print("player loses")
                                 hand_over = True
                         elif stand.collidepoint(event.pos):
                             while get_values(dealer_hand) < 17:
@@ -380,6 +389,7 @@ if __name__ == "__main__":
                 drawCircle(screen, "white", [615,545], 60)
                 drawCircle(screen, "green", [615,545], 50, f'${user_bet}')
                 new_bets = drawCircle(screen, "white", [915,545], 60, "New Bets")
+                
             else:
                 # Displays end of hand 
                 for i in range(len(user_hand)):

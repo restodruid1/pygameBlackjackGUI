@@ -1,11 +1,12 @@
-# GUI Blackjack Game in Python
-This app was an attempt to branch out of my comfort zone and write a program that involved more than the CLI so I chose to create a GUI application of Blackjack.
-I began this project with the idea of writing clean and clear code but when I hit a brick wall, I decided to write what worked and I ended up with this.  
-EDIT*: gamefileRefactored is an updated version of the game with respect to the code. I revisited this project a few months later to see how I have progessed and if I could write cleaner, more understandable code.
+# Description
+This is a graphical game version of the popular card game, Blackjack, coded using Python.  
+Watch https://www.youtube.com/watch?v=mkNfPSEB69Q to see gameplay.
 # Installation
-Download the game file and have Pygame installed and it should work.
+1) Download Python from https://www.python.org/
+2) Download the game file
+3) Install Pygame
 # Features
 The game allows the user to hit, stand, double down, or split. It also tells the user who won or lost. Dealer stands on a soft 17.
-# Future
-Hoping to add a money/chip feature.  
-EDIT*: gamefileRefactored added this feature.
+# Roadmap
+1) Allow user to play multiple hands.
+2) Card graphics
